@@ -29,13 +29,23 @@ int8_t tryNewThread()
 }
 
 char readBuffer[512];
-
+char tempBuffer[512][30];
+static int8_t counter = 0;
 void* init_Main(void *data)
 {
 
 	while(1)
 	{
 		CAN_RX_THREAD(data);
+		if(counter > 20)
+		{
+			break;
+		}
+	}
+	int i = 0;
+	for(i = 0; i < counter; i++)
+	{
+		printf("Package %d is %s\n",i,&tempBuffer[i]);
 	}
 }
 
@@ -52,7 +62,7 @@ int8_t CAN_RX_THREAD(char* rxBuffer)
 	int8_t lenghtSecondPart = 0;
 	int8_t lenghtThirdPart = 0;
 	int8_t ret = 0;
-	int8_t counter = 0;
+	
 	if(TEL_pollTelnet(firstPartMessage) == TEL_ERROR)
 	{
 		return CAN_ERROR;
@@ -66,7 +76,6 @@ int8_t CAN_RX_THREAD(char* rxBuffer)
 	}
 
 	sprintf(rxBuffer, "%s", firstPartMessage);
-	counter ++;
 	
 	//printf("first - %s cnt is %d\n", firstPartMessage,counter);
 	//char ID = firstPartMessage & 0x0f;
@@ -106,7 +115,9 @@ int8_t CAN_RX_THREAD(char* rxBuffer)
 		sprintf(rxBuffer + lenghtFirstPart + lenghtSecondPart, "%s", thirdPartMessage);
 		
 		memcpy(readBuffer,rxBuffer, strlen(rxBuffer));
-		printf("Whole message is %s\n",&readBuffer);
+		memcpy(&tempBuffer[counter], readBuffer, strlen(readBuffer));
+		counter ++;
+		printf("Whole message is %s and CND is %d\n",&readBuffer, counter);
 		ret = CAN_findCRLF(thirdPartMessage, TELNET_MESSGAGE_LENGHT);
 		if(ret == CRLF_FIND)
 		{
