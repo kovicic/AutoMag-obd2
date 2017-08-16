@@ -21,7 +21,7 @@ static char buffer83k3Boudrate[] = "83k3";
 static char buffer50kBoudrate[] = "50k";
 static char buffer33k3Boudrate[] = "33k3";
 
-static int8_t CAN_findCRLF(char* buffer, int8_t bufferSize)
+int8_t CAN_findCRLF(char* buffer, int8_t bufferSize)
 {
 	int8_t i = 0;
 
@@ -41,7 +41,7 @@ static int8_t CAN_findCRLF(char* buffer, int8_t bufferSize)
 	return CRLF_NO_FIND;
 }
 
-static void CAN_clearCRLF(char* buffer, int8_t bufferSize)
+void CAN_clearCRLF(char* buffer, int8_t bufferSize)
 {
 	int8_t i = 0;
 	for(i = 0; i < bufferSize; i++)
@@ -186,6 +186,30 @@ int8_t CAN_setFilter(int8_t channel, int8_t index, char* standardId, char* exten
 	}
 }
 
+int8_t CAN_initAlignment(int8_t align)
+{
+	char bufferSend[30];
+	if(align != 1 || align !=2)
+	{
+		if(align == 1)
+		{
+			sprintf(bufferSend, "CAN USER ALIGN LEFT\n");
+			printf("buffer is %s\n", bufferSend);	
+		}
+		else
+		{
+			sprintf(bufferSend, "CAN USER ALIGN RIGHT\n");	
+		}
+		TEL_sendData(bufferSend, strlen(bufferSend));
+	}
+	else
+	{
+		printf( " invalid align\n");
+		return CAN_ERROR;
+	}
+	return CAN_SUCCESS;
+}
+
 int8_t CAN_InitCan(CANConfigure* config)
 {
 	char receiveBuffer[100];
@@ -205,7 +229,21 @@ int8_t CAN_InitCan(CANConfigure* config)
 		}
 	}
 	
-
+	if(CAN_initAlignment(config->align) == CAN_ERROR)
+	{
+		printf("Can't set alignment\n");
+		return CAN_ERROR;
+	}
+	else
+	{
+		TEL_pollTelnet(receiveBuffer);
+		printf("Telnet: %s\n", receiveBuffer);
+		if(memcmp(receiveBuffer, "OK", 2))
+		{
+			return CAN_ERROR;
+		}
+	}
+	
 	if(CAN_setMask(config->channel, config->maskStandard, config->maskExtended) == CAN_ERROR)
 	{
 		printf("Can't set mask\n");
@@ -242,6 +280,7 @@ int8_t CAN_InitCan(CANConfigure* config)
 
 int8_t CAN_RX(char* rxBuffer)
 {
+	char myBuffer[30];
 	char firstPartMessage[TELNET_MESSGAGE_LENGHT];
 	char secondPartMessage[TELNET_MESSGAGE_LENGHT];
 	char thirdPartMessage[TELNET_MESSGAGE_LENGHT];
@@ -250,7 +289,7 @@ int8_t CAN_RX(char* rxBuffer)
 	int8_t lenghtSecondPart = 0;
 	int8_t lenghtThirdPart = 0;
 	int8_t ret = 0;
-
+	int8_t counter = 0;
 	if(TEL_pollTelnet(firstPartMessage) == TEL_ERROR)
 	{
 		return CAN_ERROR;
@@ -264,7 +303,11 @@ int8_t CAN_RX(char* rxBuffer)
 	}
 
 	sprintf(rxBuffer, "%s", firstPartMessage);
-
+	counter ++;
+	
+	printf("first - %s cnt is %d\n", firstPartMessage,counter);
+	//char ID = firstPartMessage & 0x0f;
+	//printf("ID is %d\n", &ID);	
 	if(TEL_pollTelnet(secondPartMessage) == TEL_ERROR)
 	{
 		return CAN_ERROR;
@@ -272,6 +315,7 @@ int8_t CAN_RX(char* rxBuffer)
 
 	lenghtSecondPart = strlen(secondPartMessage);
 	sprintf(rxBuffer + lenghtFirstPart, "%s", secondPartMessage);
+	printf("second - %s cnt is %d\n", secondPartMessage,counter);
 
 	ret = CAN_findCRLF(secondPartMessage, TELNET_MESSGAGE_LENGHT);
 	if(ret == CRLF_FIND)
@@ -297,7 +341,9 @@ int8_t CAN_RX(char* rxBuffer)
 
 		lenghtThirdPart = strlen(thirdPartMessage);
 		sprintf(rxBuffer + lenghtFirstPart + lenghtSecondPart, "%s", thirdPartMessage);
-
+	printf("third - %s cnt is %d\n", &thirdPartMessage[0],counter);
+	printf("Whole message is %s\n",&rxBuffer[16]);
+	printf("Size of buffer is %d\n", strlen(rxBuffer));
 		ret = CAN_findCRLF(thirdPartMessage, TELNET_MESSGAGE_LENGHT);
 		if(ret == CRLF_FIND)
 		{
