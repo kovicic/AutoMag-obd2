@@ -82,7 +82,7 @@ int main()
 	pthread_create(&tryThread1, 0, init_Main, (void *)rxBuffer);
     initOBD2();
     
-
+	/*
     while(1)
     {
         printf("Chose car information: \n");
@@ -131,7 +131,7 @@ int main()
         printf("%s\n", rxBuffer);
 
         printf("\n\n");
-    }
+    }*/
 	//pthread_join(tryThread, 0);
 	pthread_join(tryThread1, 0);
     return 0;

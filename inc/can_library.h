@@ -20,8 +20,8 @@
 #define CAN_CH1 1
 #define CAN_CH2 2
 
-#define CAN_DEFAULT_MASK 	"1111"
-#define CAN_DEFAULT_ID 		"1111"
+#define CAN_DEFAULT_MASK 	"ffff"
+#define CAN_DEFAULT_ID 		"0030"
 
 
 typedef struct _CANConfigure

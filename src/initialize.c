@@ -21,7 +21,6 @@ static char buffer83k3Boudrate[] = "83k3";
 static char buffer50kBoudrate[] = "50k";
 static char buffer33k3Boudrate[] = "33k3";
 
-
 int8_t tryNewThread()
 {
 	printf(" ***************************" );	
@@ -31,24 +30,75 @@ int8_t tryNewThread()
 char readBuffer[512];
 char tempBuffer[512][30];
 static int8_t counter = 0;
+char canID[4];
+int8_t dataBuffer[TELNET_MESSGAGE_LENGHT];
 void* init_Main(void *data)
 {
 
 	while(1)
 	{
 		CAN_RX_THREAD(data);
-		if(counter > 20)
+		if(counter > 5)
 		{
 			break;
 		}
 	}
-	int i = 0;
-	for(i = 0; i < counter; i++)
-	{
-		printf("Package %d is %s\n",i,&tempBuffer[i]);
-	}
+	calculateValues();
+	
 }
 
+static int htoi(char c)
+{
+	 int ret = 0;
+	 
+	 if('a'<= c && c <= 'f')
+	 {
+		ret = c - 'a' + 10;
+	 }
+	 else if('A' <= c && c <= 'F')
+	 {
+		ret = c - 'A' + 10;
+	 }
+	 else if('0' <= c && c <= '9')
+	 {
+		ret = c - '0';
+	 }
+	 
+	 return ret;
+}
+
+int8_t calculateValues()
+{
+	int8_t i = 0;
+	int8_t j = 0;
+	int8_t value = 0;
+	//char ID = &tempBuffer[i][
+	for(i = 0; i < counter; i++)
+	{
+		//int ID = &tempBuffer[i][4] >> 13;
+		//printf(" ID IS %s\n", canID);
+		//printf("Package %d is %s\n",i,&tempBuffer[i][4]);
+		//value = htoi(tempBuffer[i][16])+(htoi(tempBuffer[i][15])<<4);
+		//printf(" Value is %d\n",value);
+		//od 9
+		for(j = 0; j < TELNET_MESSGAGE_LENGHT ; j ++)
+		{
+			dataBuffer[j] = htoi(tempBuffer[i][j + 9]);
+		}
+		
+		value = dataBuffer[7] + dataBuffer[6];
+		printf(" %d value :\n",dataBuffer[0]);
+		printf(" %d value :\n",dataBuffer[1]);
+		printf(" %d value :\n",dataBuffer[4] * 1000 + dataBuffer[5] * 100 + dataBuffer[6] * 10 + dataBuffer[7]);
+		/*
+		for( j = 0; j < TELNET_MESSGAGE_LENGHT; j++)
+		{
+			printf("Value of %d is %d\n", j, dataBuffer[j]);
+		}
+		*/
+	}
+	return 0;
+}
 
 int8_t CAN_RX_THREAD(char* rxBuffer)
 {
@@ -77,7 +127,21 @@ int8_t CAN_RX_THREAD(char* rxBuffer)
 
 	sprintf(rxBuffer, "%s", firstPartMessage);
 	
-	//printf("first - %s cnt is %d\n", firstPartMessage,counter);
+	//printf("first - %s cnt is %d\n", &firstPartMessage[4],counter);
+	//canID = &firstPartMessage[4];
+	//printf("first - %s cnt is %d\n", &firstPartMessage[4],counter);
+	strcpy(canID, (&firstPartMessage[4]));
+
+	if(!strcmp(canID, "5500"))
+	{
+		printf("IMAMO ID 5500");
+	}
+	else if(!strcmp(canID, "4400"))
+	{
+		printf("IMAMO ID 4400");
+	}
+	    
+	printf(". %d --- %s\n",strlen(canID),canID);
 	//char ID = firstPartMessage & 0x0f;
 	//printf("ID is %d\n", &ID);	
 	if(TEL_pollTelnet(secondPartMessage) == TEL_ERROR)
@@ -117,7 +181,7 @@ int8_t CAN_RX_THREAD(char* rxBuffer)
 		memcpy(readBuffer,rxBuffer, strlen(rxBuffer));
 		memcpy(&tempBuffer[counter], readBuffer, strlen(readBuffer));
 		counter ++;
-		printf("Whole message is %s and CND is %d\n",&readBuffer, counter);
+		//printf("Whole message is %s and CND is %d\n",&readBuffer, counter);
 		ret = CAN_findCRLF(thirdPartMessage, TELNET_MESSGAGE_LENGHT);
 		if(ret == CRLF_FIND)
 		{

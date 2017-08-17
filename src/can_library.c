@@ -18,7 +18,7 @@ static char buffer125kBoudrate[] = "125k";
 static char buffer100kBoudrate[] = "100k";
 static char buffer95k2Boudrate[] = "95k2";
 static char buffer83k3Boudrate[] = "83k3";
-static char buffer50kBoudrate[] = "50k";
+static char buffer50kBoudrate[]  = "50k";
 static char buffer33k3Boudrate[] = "33k3";
 
 int8_t CAN_findCRLF(char* buffer, int8_t bufferSize)
@@ -243,7 +243,7 @@ int8_t CAN_InitCan(CANConfigure* config)
 			return CAN_ERROR;
 		}
 	}
-	
+	/*
 	if(CAN_setMask(config->channel, config->maskStandard, config->maskExtended) == CAN_ERROR)
 	{
 		printf("Can't set mask\n");
@@ -258,7 +258,7 @@ int8_t CAN_InitCan(CANConfigure* config)
 			return CAN_ERROR;
 		}
 	}
-
+*/
 	if(CAN_setFilter(config->channel, config->filterIndex, config->filterStandard, config->filterExtended) == CAN_ERROR)
 	{
 		printf("Can't set filter\n");
