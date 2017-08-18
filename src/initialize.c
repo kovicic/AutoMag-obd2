@@ -12,6 +12,10 @@
 
 #define TELNET_MESSGAGE_LENGHT 8
 
+#define PID0020 "0100"
+#define PID2140 "0120"
+#define PID4160 "0140"
+
 static char buffer500kBoudrate[] = "500k";
 static char buffer250kBoudrate[] = "250k";
 static char buffer125kBoudrate[] = "125k";
@@ -20,31 +24,74 @@ static char buffer95k2Boudrate[] = "95k2";
 static char buffer83k3Boudrate[] = "83k3";
 static char buffer50kBoudrate[] = "50k";
 static char buffer33k3Boudrate[] = "33k3";
-
-int8_t tryNewThread()
-{
-	printf(" ***************************" );	
-	return 5;
-}
+static CANConfigure config;
 
 char readBuffer[512];
 char tempBuffer[512][30];
 static int8_t counter = 0;
 char canID[4];
 int8_t dataBuffer[TELNET_MESSGAGE_LENGHT];
-void* init_Main(void *data)
-{
+static char *checkPid[] = { PID0020, PID2140, PID4160};
 
-	while(1)
-	{
-		CAN_RX_THREAD(data);
-		if(counter > 5)
-		{
-			break;
-		}
-	}
-	calculateValues();
+
+void initOBD2(CANConfigure *config)
+{   
+    char rxBuffer[100];
+    int8_t i = 0;
+    
+    for(i = 0; i < 3; i++)
+    {
+        CAN_TX(config->channel, CAN_DEFAULT_ID, NULL, checkPid[i]);
+        TEL_pollTelnet(rxBuffer);
+        if(memcmp(rxBuffer, "OK", 2))
+        {
+            printf("%s\n", rxBuffer);
+            return;
+        }
+     }   
+    
+    CAN_RX_THREAD(rxBuffer);
+	printf("%s\n", rxBuffer);
+    
+
+    printf("****************************************\n");
+    printf("\n\n");
+}
+
+void initTELNET()
+{
 	
+	if(TEL_InitTelnetClient() == TEL_ERROR)
+    {
+        printf("Can't initalize libtelnet\n");
+    }
+    else
+    {
+		printf("Telnet initialized successfully\n");
+	}
+    
+}
+
+void initCAN(CANConfigure *config)
+{
+    
+	if(CAN_InitCan(config) == CAN_ERROR)
+    {
+        printf("Error in CAN initalize\n");
+    }
+	
+}
+void setConfig(CANConfigure *config)
+{
+	config->channel = CAN_CH2;
+    config->boudrate = BOUDRATE250K;
+    config->maskStandard = CAN_DEFAULT_MASK;
+    config->maskExtended = NULL;
+    config->filterIndex = 0;
+    config->filterStandard = CAN_DEFAULT_ID;
+    config->filterExtended = NULL;
+    config->align = ALIGNMENTLEFT;
+
 }
 
 static int htoi(char c)
@@ -87,9 +134,9 @@ int8_t calculateValues()
 		}
 		
 		value = dataBuffer[7] + dataBuffer[6];
-		printf(" %d value :\n",dataBuffer[0]);
-		printf(" %d value :\n",dataBuffer[1]);
-		printf(" %d value :\n",dataBuffer[4] * 1000 + dataBuffer[5] * 100 + dataBuffer[6] * 10 + dataBuffer[7]);
+		//printf(" %d value :\n",dataBuffer[0]);
+		//printf(" %d value :\n",dataBuffer[1]);
+		printf("Second value is  %d\n",dataBuffer[4] * 1000 + dataBuffer[5] * 100 + dataBuffer[6] * 10 + dataBuffer[7]);
 		/*
 		for( j = 0; j < TELNET_MESSGAGE_LENGHT; j++)
 		{
@@ -100,9 +147,9 @@ int8_t calculateValues()
 	return 0;
 }
 
-int8_t CAN_RX_THREAD(char* rxBuffer)
+int8_t CAN_RX_THREAD()
 {
-	//printf(" USAO U THREAD JBNI");
+	char rxBuffer[30];
 	char myBuffer[30];
 	char firstPartMessage[TELNET_MESSGAGE_LENGHT];
 	char secondPartMessage[TELNET_MESSGAGE_LENGHT];
@@ -134,14 +181,14 @@ int8_t CAN_RX_THREAD(char* rxBuffer)
 
 	if(!strcmp(canID, "5500"))
 	{
-		printf("IMAMO ID 5500");
+		//printf("IMAMO ID 5500\n");
 	}
 	else if(!strcmp(canID, "4400"))
 	{
-		printf("IMAMO ID 4400");
+		//printf("IMAMO ID 4400\n");
 	}
-	    
-	printf(". %d --- %s\n",strlen(canID),canID);
+	 printf(".");   
+	//printf(". %d --- %s\n",strlen(canID),canID);
 	//char ID = firstPartMessage & 0x0f;
 	//printf("ID is %d\n", &ID);	
 	if(TEL_pollTelnet(secondPartMessage) == TEL_ERROR)
@@ -198,5 +245,28 @@ int8_t CAN_RX_THREAD(char* rxBuffer)
 			return CAN_SUCCESS;
 		}
 	}
+	
 
+}
+
+
+void* init_Main()
+{
+	
+
+	setConfig(&config);
+    initTELNET();
+    initCAN(&config);
+	//initOBD2(&config);
+	while(1)
+	{
+		CAN_RX_THREAD();
+		if(counter > 20)
+		{
+			break;
+		}
+	}
+	printf("\n");
+	calculateValues();
+	
 }

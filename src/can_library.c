@@ -305,7 +305,7 @@ int8_t CAN_RX(char* rxBuffer)
 	sprintf(rxBuffer, "%s", firstPartMessage);
 	counter ++;
 	
-	printf("first - %s cnt is %d\n", firstPartMessage,counter);
+	//printf("first - %s cnt is %d\n", firstPartMessage,counter);
 	//char ID = firstPartMessage & 0x0f;
 	//printf("ID is %d\n", &ID);	
 	if(TEL_pollTelnet(secondPartMessage) == TEL_ERROR)
@@ -315,7 +315,7 @@ int8_t CAN_RX(char* rxBuffer)
 
 	lenghtSecondPart = strlen(secondPartMessage);
 	sprintf(rxBuffer + lenghtFirstPart, "%s", secondPartMessage);
-	printf("second - %s cnt is %d\n", secondPartMessage,counter);
+	//printf("second - %s cnt is %d\n", secondPartMessage,counter);
 
 	ret = CAN_findCRLF(secondPartMessage, TELNET_MESSGAGE_LENGHT);
 	if(ret == CRLF_FIND)
@@ -341,9 +341,9 @@ int8_t CAN_RX(char* rxBuffer)
 
 		lenghtThirdPart = strlen(thirdPartMessage);
 		sprintf(rxBuffer + lenghtFirstPart + lenghtSecondPart, "%s", thirdPartMessage);
-	printf("third - %s cnt is %d\n", &thirdPartMessage[0],counter);
-	printf("Whole message is %s\n",&rxBuffer[16]);
-	printf("Size of buffer is %d\n", strlen(rxBuffer));
+	//printf("third - %s cnt is %d\n", &thirdPartMessage[0],counter);
+	//printf("Whole message is %s\n",&rxBuffer[16]);
+	//printf("Size of buffer is %d\n", strlen(rxBuffer));
 		ret = CAN_findCRLF(thirdPartMessage, TELNET_MESSGAGE_LENGHT);
 		if(ret == CRLF_FIND)
 		{

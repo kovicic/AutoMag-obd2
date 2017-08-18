@@ -3,6 +3,7 @@
 
 #include "telnet-client.h"
 #include "can_library.h"
+//#include "signals.h" 
 
 
 
@@ -12,10 +13,14 @@ typedef struct
 	
 }CanData;
 
-void* init_Main(void *);
-int8_t CAN_RX_THREAD(char* rxBuffer);
+void* init_Main();
+void setConfig(CANConfigure *config);
+void initOBD2();
+void initTELNET();
+void initCAN(CANConfigure *config);
+
+int8_t CAN_RX_THREAD();
 int8_t calculateValues();
-int8_t tryNewThread();
 
 
 #endif  /*__INITIALIZE_H__*/
