@@ -3,6 +3,7 @@
 
 #include "telnet-client.h"
 #include "can_library.h"
+#include "dashboard.h"
 //#include "signals.h" 
 
 
@@ -18,8 +19,9 @@ void setConfig(CANConfigure *config);
 void initOBD2();
 void initTELNET();
 void initCAN(CANConfigure *config);
+void initData(dashboard *db);
 
-int8_t CAN_RX_THREAD();
+int8_t CAN_RX_THREAD(dashboard *db);
 int8_t calculateValues();
 
 

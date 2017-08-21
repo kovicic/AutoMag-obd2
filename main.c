@@ -1,25 +1,27 @@
 #include "telnet-client.h"
 #include "can_library.h"
 #include "initialize.h"
+#include "read_content.h"
 #include "dashboard.h"
 
-#define PID0020 "0100"
-#define PID2140 "0120"
-#define PID4160 "0140"
-
-#define PID_RPM             "1111"
-#define PID_SPEED           "1111"
-#define PID_COOLANT_TEMP    "0105"
-#define PID_FUEL_LEVEL      "012F"
 
 
 int main()
 {
+	dashboard data;
+	data.head = 0;
+	data.count = 0;
+	pthread_mutex_init(&data.lock, NULL);
+	
+    pthread_t initReceive;
+    pthread_t readContent;
 
-    pthread_t tryThread1;
+	pthread_create(&initReceive, 0, init_Main, (void *)&data);
+	pthread_create(&readContent, 0, read_Main, (void *)&data);
 
-	pthread_create(&tryThread1, 0, init_Main, 0);
-
-	pthread_join(tryThread1, 0);
+	
+	pthread_join(initReceive, 0);
+	pthread_join(readContent, 0);
+	pthread_mutex_destroy(&data.lock);
     return 0;
 }
