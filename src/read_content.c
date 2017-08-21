@@ -36,7 +36,7 @@ void* read_Main(void * data)
 		{
 			//printf("ispred2:\n");
 			pthread_mutex_lock(&db->lock);
-			printf(" rpm %d \n kmh %d \n fuel %d \n", db->rpm, db->kmh, db->fuel);
+			printf(" rpm %d \n kmh %d \n fuel %d \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", db->rpm, db->kmh, db->fuel);
 			if(db->ID == 5500)
 			{	//strcpy(try,db->kmh);
 				//value = htoi(db->kmh[1]) + 10 * htoi(db->kmh[0]);

@@ -191,18 +191,13 @@ int8_t CAN_RX_THREAD(dashboard *db)
 	{
 		
 		db->ID = 5500;
-		//printf(" ID IS %d\n", db->ID);
-		//printf("IMAMO ID 5500\n");
 	}
 	else if(!strcmp(canID, "4400"))
 	{
 		db->ID = 4400;
-		//printf("IMAMO ID 4400\n");
 	}
-	 printf(".");   
-	//printf(". %d --- %s\n",strlen(canID),canID);
-	//char ID = firstPartMessage & 0x0f;
-	//printf("ID is %d\n", &ID);	
+	
+	//printf(".");   
 	if(TEL_pollTelnet(secondPartMessage) == TEL_ERROR)
 	{
 		return CAN_ERROR;
@@ -238,39 +233,30 @@ int8_t CAN_RX_THREAD(dashboard *db)
 		sprintf(rxBuffer + lenghtFirstPart + lenghtSecondPart, "%s", thirdPartMessage);
 		
 		memcpy(readBuffer,rxBuffer, strlen(rxBuffer));
-		//memcpy(&tempBuffer[counter], readBuffer, strlen(readBuffer));
 		counter ++;
-		//printf("Whole message is %s and CND is %d\n",&readBuffer, counter);
 		
 		pthread_mutex_lock(&db->lock);
 		db->count ++;
-		int value = 0;
 		strcpy(&db->data[db->count], &readBuffer[9]);
+		
 		switch(db->ID)
 		{
 			case 5500:
 				db->kmh = htoi((&db->data[db->count])[1]) + 10 * htoi((&db->data[db->count])[0]);
 				db->fuel = htoi((&db->data[db->count])[7]) + 10 * htoi((&db->data[db->count])[6]);
 				
-				//printf(" kmh- %d fuel - %d \n\n",db->kmh, db->fuel);
-				//strcpy(db->kmh,&db->data[db->count]);
 			break;
 			case 4400:
 				db->rpm = 1000 * htoi((&db->data[db->count])[4]) + 
 							100 * htoi((&db->data[db->count])[5]) +
 							 10 * htoi((&db->data[db->count])[6]) + 
 								  htoi((&db->data[db->count])[7]);
-				//printf(" rpm-s: %d\n", db->rpm);
 			break;
 			default:
 				break;
 		}
-		//mmstrcpy(db->kmh,&readBuffer[9]);
 		//printf("staro %s\n", thirdPartMessage);
-		printf("WRITE data - %s i ID %d and cnt %d\n", &db->data[db->count],db->ID,db->count);
-		
-		
-		//printf(" Punimo cnt - %d a data  %s\n",db->count,&db->data[db->count + 1]);
+		//printf("WRITE data - %s i ID %d and cnt %d\n", &db->data[db->count],db->ID,db->count);
 		pthread_mutex_unlock(&db->lock);
 		
 		ret = CAN_findCRLF(thirdPartMessage, TELNET_MESSGAGE_LENGHT);
@@ -299,40 +285,17 @@ void* init_Main(void * data)
 	int i = 1;
 	int cnt = 0;
 	dashboard *db = (dashboard *)data;
-	/*for(i = 0; i < 100; i++)
-	{
-		db->data[i] = 2 * i;
-		db->head ++;
-		printf(" Data init is %d and head is %d\n", db->data[i], db->head);
-	}
-	*/
+
 	setConfig(&config);
     initTELNET();
     initCAN(&config);
     initData(db);
-	//initOBD2(&config);
+    
 	while(1)
 	{	
 		CAN_RX_THREAD(db);
-		/*printf("ispreD1:\n");
-		pthread_mutex_lock(&db->lock);
-		
-		
-		db->data[db->count + 1] = i;
-		printf("WRITE: data[%d] = %d \n", db->count + 1, i);
-		db->count ++;
-		
-		pthread_mutex_unlock(&db->lock);
-		printf("iza:1\n");
-		i++;
-		if(cnt > 120)
-		{
-			
-			break;
-		}
-		cnt ++;*/
 	}
 	printf("\n");
-	calculateValues();
+	//calculateValues();
 	
 }
