@@ -26,8 +26,8 @@ typedef struct _dashboard
 	int boudrate;
 	int ID;
 	char data[100];
-	int16_t kmh;
-	int8_t  fuel;
+	uint32_t kmh;
+	uint32_t  fuel;
 	int32_t rpm;
 	pthread_mutex_t lock;
 	int count;

@@ -242,15 +242,14 @@ int8_t CAN_RX_THREAD(dashboard *db)
 		switch(db->ID)
 		{
 			case 5500:
-				db->kmh = htoi((&db->data[db->count])[1]) + 10 * htoi((&db->data[db->count])[0]);
+				db->kmh = htoi ((&db->data[db->count])[5]) * 100 +  htoi((&db->data[db->count])[6]) * 10 + htoi((&db->data[db->count])[7]) - 32;
 				db->fuel = htoi((&db->data[db->count])[7]) + 10 * htoi((&db->data[db->count])[6]);
 				
 			break;
 			case 4400:
-				db->rpm = 1000 * htoi((&db->data[db->count])[4]) + 
-							100 * htoi((&db->data[db->count])[5]) +
-							 10 * htoi((&db->data[db->count])[6]) + 
-								  htoi((&db->data[db->count])[7]);
+				db->rpm = 300 * (htoi((&db->data[db->count])[6]) - 3) + 
+							30 * (htoi((&db->data[db->count])[7]) - 2);
+					
 			break;
 			default:
 				break;
