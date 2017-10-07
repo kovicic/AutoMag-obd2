@@ -1,3 +1,11 @@
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <ifaddrs.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 /*
  * Sean Middleditch
  * sean@sourcemud.org
@@ -17,7 +25,7 @@ static int do_echo;
 static telnetCallback telnetCall;
 static int8_t sockTelnet;
 static char carberryPort[] = "7070";
-static char localHost[] = "192.168.0.11";
+char adresa[] = "111.111.111.111";
 static char turnLed1OnBuffer[] = "GPLED LED1 SET\n";
 static char turnLed1OffBuffer[] = "GPLED LED1 CLEAR\n";
 static char turnLed2OnBuffer[] = "GPLED LED2 SET\n";
@@ -177,23 +185,60 @@ int8_t TEL_pollTelnet(char* receiveBuffer)
 
  	return TEL_SUCCESS; 
 }
+void getRaspberryIP()
+{
+    struct ifaddrs *ifaddr, *ifa;
+    int family, s;
+    char host[NI_MAXHOST];
+
+    if (getifaddrs(&ifaddr) == -1) 
+    {
+        perror("getifaddrs");
+        exit(EXIT_FAILURE);
+    }
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) 
+    {	
+        if (ifa->ifa_addr == NULL)
+            continue;  
+
+        s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+        if((strcmp(ifa->ifa_name,"eth0")==0)&&(ifa->ifa_addr->sa_family==AF_INET))
+        {
+            if (s != 0)
+            {
+                printf("getnameinfo() failed: %s\n", gai_strerror(s));
+                exit(EXIT_FAILURE);
+            }
+            /*printf("\tInterface : <%s>\n",ifa->ifa_name );*/
+            printf("Raspberry address is - %s\n", host); 
+	    strcpy(adresa, host);	
+        }
+    }
+    freeifaddrs(ifaddr);
+
+    //exit(EXIT_SUCCESS);
+
+}
 
 int8_t TEL_InitTelnetClient() {
 
 	char buffer[512];
+	char localHost[] = "10.80.11.10";
 	int rs;
 	struct sockaddr_in addr;
 	struct pollfd pfd[2];
 	struct addrinfo *ai;
 	struct addrinfo hints;
 	struct termios tios;
+	getRaspberryIP();
 
 	/* look up server host */
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
-	if ((rs = getaddrinfo(localHost, carberryPort, &hints, &ai)) != 0) {
-		fprintf(stderr, "getaddrinfo() failed for %s: %s\n", localHost,
+	if ((rs = getaddrinfo(adresa, carberryPort, &hints, &ai)) != 0) {
+		fprintf(stderr, "getaddrinfo() failed for %s: %s\n", adresa,
 				gai_strerror(rs));
 		return TEL_ERROR;
 	}
