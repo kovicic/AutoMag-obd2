@@ -186,13 +186,13 @@ int8_t CAN_RX_THREAD(dashboard *db)
 	//printf("first - %s cnt is %d\n", &firstPartMessage[4],counter);
 	strcpy(canID, (&firstPartMessage[4]));
 
-	
-	if(!strcmp(canID, "5500"))
+	printf("ULAZIMO U OVO GOVNO %s\n",canID);
+	if(!strcmp(canID, "0040"))
 	{
 		
 		db->ID = 5500;
 	}
-	else if(!strcmp(canID, "4400"))
+	else if(!strcmp(canID, "0020"))
 	{
 		db->ID = 4400;
 	}
@@ -238,11 +238,11 @@ int8_t CAN_RX_THREAD(dashboard *db)
 		pthread_mutex_lock(&db->lock);
 		db->count ++;
 		strcpy(&db->data[db->count], &readBuffer[9]);
-		
+		printf("ID IS %d\n",db->ID);
 		switch(db->ID)
 		{
 			case 5500:
-				db->kmh = htoi ((&db->data[db->count])[5]) * 100 +  htoi((&db->data[db->count])[6]) * 10 + htoi((&db->data[db->count])[7]) - 32;
+				db->kmh = 45;//htoi ((&db->data[db->count])[5]) * 100 +  htoi((&db->data[db->count])[6]) * 10 + htoi((&db->data[db->count])[7]) - 32;
 				db->fuel = htoi((&db->data[db->count])[7]) + 10 * htoi((&db->data[db->count])[6]);
 				
 			break;

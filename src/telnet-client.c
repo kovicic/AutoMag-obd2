@@ -17,7 +17,7 @@ static int do_echo;
 static telnetCallback telnetCall;
 static int8_t sockTelnet;
 static char carberryPort[] = "7070";
-static char localHost[] = "10.80.11.80";
+static char localHost[] = "192.168.0.11";
 static char turnLed1OnBuffer[] = "GPLED LED1 SET\n";
 static char turnLed1OffBuffer[] = "GPLED LED1 CLEAR\n";
 static char turnLed2OnBuffer[] = "GPLED LED2 SET\n";
