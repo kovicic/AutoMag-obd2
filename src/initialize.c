@@ -186,18 +186,16 @@ int8_t CAN_RX_THREAD(dashboard *db)
 	//printf("first - %s cnt is %d\n", &firstPartMessage[4],counter);
 	strcpy(canID, (&firstPartMessage[4]));
 
-	printf("ULAZIMO U OVO GOVNO %s\n",canID);
-	if(!strcmp(canID, "0040"))
+	if(!strcmp(canID, "5500"))
 	{
 		
 		db->ID = 5500;
 	}
-	else if(!strcmp(canID, "0020"))
+	else if(!strcmp(canID, "4400"))
 	{
 		db->ID = 4400;
 	}
 	
-	//printf(".");   
 	if(TEL_pollTelnet(secondPartMessage) == TEL_ERROR)
 	{
 		return CAN_ERROR;
@@ -238,17 +236,15 @@ int8_t CAN_RX_THREAD(dashboard *db)
 		pthread_mutex_lock(&db->lock);
 		db->count ++;
 		strcpy(&db->data[db->count], &readBuffer[9]);
-		printf("ID IS %d\n",db->ID);
 		switch(db->ID)
 		{
 			case 5500:
-				db->kmh = htoi ((&db->data[db->count])[5]) * 100 +  htoi((&db->data[db->count])[6]) * 10 + htoi((&db->data[db->count])[7]) - 32;
-				db->fuel = htoi((&db->data[db->count])[7]) + 10 * htoi((&db->data[db->count])[6]);
-				
+				//printf("5500******%d******\n",htoi ((&db->data[db->count])[7]));
+				db->kmh = htoi ((&db->data[db->count])[5]) * 100 +  htoi((&db->data[db->count])[6]) * 10 + htoi((&db->data[db->count])[7]);
 			break;
 			case 4400:
-				db->rpm = 300 * (htoi((&db->data[db->count])[6]) - 3) + 
-							30 * (htoi((&db->data[db->count])[7]) - 2);
+				//printf("4400******%d******\n",htoi ((&db->data[db->count])[6]));
+				db->rpm = (htoi ((&db->data[db->count])[4]) * 1000 + htoi ((&db->data[db->count])[5]) * 100 +  htoi((&db->data[db->count])[6]) * 10 + htoi((&db->data[db->count])[7] ));
 					
 			break;
 			default:

@@ -28,7 +28,7 @@ void* read_Main(void * data)
 	static  flag = 0;
 	char try[4];
 	int value = 0;
-	printf(" value is %d\n", htoi(try[1]));
+	//printf(" value is %d\n", htoi(try[1]));
 	system("console /c dir c:\\");
 	
 	while(1)
@@ -37,7 +37,7 @@ void* read_Main(void * data)
 		{
 			//printf("ispred2:\n");
 			pthread_mutex_lock(&db->lock);
-			printf(" rpm %d \n kmh %d \n fuel %d \n\n\n\n\n\n\n\n\n\n\n\n", db->rpm, db->kmh, db->fuel);
+			printf(" rpm %d \n kmh %d \n\n\n\n\n\n\n\n\n\n\n\n\n", db->rpm, db->kmh);
 			if(db->ID == 5500)
 			{	//strcpy(try,db->kmh);
 				//value = htoi(db->kmh[1]) + 10 * htoi(db->kmh[0]);
